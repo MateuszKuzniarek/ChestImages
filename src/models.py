@@ -15,9 +15,9 @@ def get_custom_architecture():
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.3))
     model.add(Flatten())
-    model.add(Dense(200, activation='relu'))
+    model.add(Dense(1024, activation='relu'))
     model.add(Dropout(0.3))
-    model.add(Dense(200, activation='relu'))
+    model.add(Dense(512, activation='relu'))
     model.add(Dropout(0.3))
     model.add(Dense(1, activation='sigmoid'))
     return model
@@ -32,15 +32,6 @@ def get_custom_model():
     return model
 
 
-# def get_custom_model_2():
-#     model = get_custom_architecture()
-#     model.compile(loss=keras.losses.categorical_crossentropy,
-#                   optimizer=keras.optimizers.Adam(learning_rate=0.001, beta_1=0.99, beta_2=0.999),
-#                   metrics=['accuracy'])
-#
-#     return model
-#
-#
 def _get_mobilnet():
     base_model = keras.applications.VGG19(input_shape=(base_img_rows, base_img_cols, 3),
                                                              include_top=False,

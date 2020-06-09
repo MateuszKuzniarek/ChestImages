@@ -1,6 +1,7 @@
 import numpy as np
 import time
 
+from sklearn.utils import class_weight
 from scipy import ndimage
 from tensorflow_core import keras
 from matplotlib import pyplot as plt
@@ -38,9 +39,10 @@ def start_learning(model, train_it, val_it, batch_size, epochs, dir_name):
     f = open('../data/' + dir_name + '/data.txt', "w+")
     csv_logger = CSVLogger('../data/' + dir_name + '/training.txt')
     start_time = time.time()
+    class_weights = class_weight.compute_class_weight('balanced', np.unique(train_it.classes), train_it.classes)
     history = model.fit_generator(train_it, callbacks=[csv_logger],
                                   steps_per_epoch=train_it.samples/batch_size, epochs=epochs, verbose=1,
-                                  validation_data=val_it, class_weight=True)
+                                  validation_data=val_it, class_weight=class_weights)
     end_time = time.time()
     f.write('learning time: ' + str(end_time - start_time) + '\n')
     score = model.evaluate(val_it, verbose=0)
