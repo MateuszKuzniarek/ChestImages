@@ -2,13 +2,13 @@ import numpy as np
 import time
 
 from sklearn.utils import class_weight
-from scipy import ndimage
-from tensorflow_core import keras
-from matplotlib import pyplot as plt
-from tensorflow_core.python.keras.callbacks import CSVLogger, EarlyStopping
+from tensorflow_core.python.keras.callbacks import CSVLogger
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
-
 from pathlib import Path
+from tensorflow_core import keras
+from tensorflow_core.python.keras.models import Model
+from tensorflow_core.python.keras.layers import Dense, Dropout, Flatten
+from constants import base_img_cols, base_img_rows
 
 
 def save_confusion_matrix(generator, predictions, dir_name, title):
@@ -61,3 +61,20 @@ def prepare_data():
     test_it = data_generator.flow_from_directory('../chest_xray/test/', class_mode='binary', batch_size=1, shuffle=False)
 
     return train_it, val_it, test_it
+
+
+def get_vgg19():
+    base_model = keras.applications.VGG19(input_shape=(base_img_rows, base_img_cols, 3),
+                                          include_top=False,
+                                          weights='imagenet')
+    x = Flatten()(base_model.output)
+    x = Dense(1024, activation='relu')(x)
+    x = Dropout(0.3)(x)
+    x = Dense(512, activation='relu')(x)
+    x = Dropout(0.3)(x)
+    final_tensor = Dense(1, activation='sigmoid')(x)
+    model = Model(inputs=base_model.input, outputs=final_tensor)
+    model.compile(loss=keras.losses.binary_crossentropy,
+                  optimizer=keras.optimizers.Adam(learning_rate=0.00001, beta_1=0.9, beta_2=0.99),
+                  metrics=['accuracy'])
+    return model
