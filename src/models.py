@@ -19,14 +19,14 @@ def get_custom_architecture():
     model.add(Dropout(0.3))
     model.add(Dense(200, activation='relu'))
     model.add(Dropout(0.3))
-    model.add(Dense(num_classes, activation='sigmoid'))
+    model.add(Dense(1, activation='sigmoid'))
     return model
 
 
 def get_custom_model():
     model = get_custom_architecture()
-    model.compile(loss=keras.losses.sparse_categorical_crossentropy,
-                  optimizer=keras.optimizers.Adam(learning_rate=0.000001, beta_1=0.9, beta_2=0.99),
+    model.compile(loss=keras.losses.binary_crossentropy,
+                  optimizer=keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.9, beta_2=0.99),
                   metrics=['accuracy'])
 
     return model
@@ -42,11 +42,13 @@ def get_custom_model():
 #
 #
 def _get_mobilnet():
-    base_model = keras.applications.VGG16(input_shape=(base_img_rows, base_img_cols, 3),
+    base_model = keras.applications.VGG19(input_shape=(base_img_rows, base_img_cols, 3),
                                                              include_top=False,
                                                              weights='imagenet')
     x = Flatten()(base_model.output)
-    x = Dense(50, activation='relu')(x)
+    x = Dense(1024, activation='relu')(x)
+    x = Dropout(0.3)(x)
+    x = Dense(512, activation='relu')(x)
     x = Dropout(0.3)(x)
     final_tensor = Dense(1, activation='sigmoid')(x)
     model = Model(inputs=base_model.input, outputs=final_tensor)
@@ -64,6 +66,7 @@ def _get_mobilnet():
 #
 def get_mobilenet_with_freezing():
     model = _get_mobilnet()
+    model.summary()
     # print(len(model.layers))
     # for layer in model.layers:
     #     print(layer)
@@ -71,6 +74,6 @@ def get_mobilenet_with_freezing():
     # for i in range(0, number_of_layers_to_freeze):
     #     model.layers[i].trainable = False
     model.compile(loss=keras.losses.binary_crossentropy,
-                  optimizer=keras.optimizers.Adam(learning_rate=0.000001, beta_1=0.9, beta_2=0.99),
+                  optimizer=keras.optimizers.Adam(learning_rate=0.00001, beta_1=0.9, beta_2=0.99),
                   metrics=['accuracy'])
     return model
